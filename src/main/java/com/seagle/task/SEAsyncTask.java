@@ -12,7 +12,6 @@ import java.util.concurrent.ThreadFactory;
  *
  * @author yuanxiudong66@sina.com
  */
-
 public class SEAsyncTask<V> {
     private volatile static ExecutorService sDefaultExecutor;
     private final CancelableTask<V> mTask;
@@ -28,6 +27,13 @@ public class SEAsyncTask<V> {
         mTask = null;
     }
 
+    /**
+     * Get task result.
+     *
+     * @return result
+     * @throws ExecutionException   call method exception
+     * @throws InterruptedException thread interrupted
+     */
     public final V get() throws ExecutionException, InterruptedException {
         if (mFutureTask != null) {
             return mFutureTask.get();
@@ -35,6 +41,9 @@ public class SEAsyncTask<V> {
         return null;
     }
 
+    /**
+     * Cancel task.
+     */
     public final void cancel() {
         if (mFutureTask != null) {
             mFutureTask.cancel(true);
@@ -42,7 +51,13 @@ public class SEAsyncTask<V> {
         mFutureTask = null;
     }
 
-    public final SEAsyncTask submit(TaskCallback<V> callback) {
+    /**
+     * Submit and execute task.
+     *
+     * @param callback callback
+     * @return SEAsyncTask
+     */
+    public final SEAsyncTask<V> submit(TaskCallback<V> callback) {
         synchronized (this) {
             if (mFutureTask == null) {
                 CancelableTask<V> task = mTask;
@@ -59,7 +74,14 @@ public class SEAsyncTask<V> {
         return this;
     }
 
-    public final SEAsyncTask submit(ExecutorService executor, TaskCallback<V> callback) {
+    /**
+     * Submit and execute task.
+     *
+     * @param callback callback
+     * @param executor thread pool
+     * @return SEAsyncTask
+     */
+    public final SEAsyncTask<V> submit(ExecutorService executor, TaskCallback<V> callback) {
         synchronized (this) {
             if (mFutureTask == null) {
                 CancelableTask<V> task = mTask;
@@ -92,20 +114,37 @@ public class SEAsyncTask<V> {
         }
     }
 
-    protected final void notifyProgressUpdate() {
+    /**
+     * Notify progress update.
+     * For sub class call.
+     */
+    protected final void notifyProgressUpdate(Object object) {
         if (mCallback != null && mFutureTask != null && !mFutureTask.isCancelled() && mCallback instanceof ProgressTaskCallback) {
-            ((ProgressTaskCallback) mCallback).onProgressUpdate();
+            ((ProgressTaskCallback) mCallback).onProgressUpdate(object);
         }
     }
 
-    protected V call() {
+    /**
+     * Task run.
+     * For sub class implementation.
+     */
+    protected V call() throws Exception {
         throw new UnsupportedOperationException("Task not implemented!");
     }
 
+    /**
+     * Task canceled.
+     * Sub class can release resources.
+     */
     protected void onCancel() {
 
     }
 
+    /**
+     * Return default executor.
+     *
+     * @return ExecutorService
+     */
     private static synchronized ExecutorService getDefaultExecutor() {
         if (sDefaultExecutor == null) {
             int coreSize = Runtime.getRuntime().availableProcessors();

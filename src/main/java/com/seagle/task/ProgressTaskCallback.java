@@ -8,5 +8,5 @@ package com.seagle.task;
  */
 
 public interface ProgressTaskCallback<V> extends TaskCallback<V> {
-    void onProgressUpdate();
+    void onProgressUpdate(Object object);
 }
