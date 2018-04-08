@@ -10,6 +10,6 @@ import java.util.concurrent.Callable;
  * @author yuanxiudong66@sina.com
  */
 
-public interface CancelableTask<V> extends Callable<V> {
+public interface SECancelableTask<V> extends Callable<V> {
     void cancel();
 }

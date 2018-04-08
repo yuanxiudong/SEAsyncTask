@@ -7,7 +7,7 @@ package com.seagle.task;
  * @author yuanxiudong66@sina.com
  */
 
-public interface TaskCallback<V> {
+public interface SETaskCallback<V> {
 
     /**
      * Task complete.

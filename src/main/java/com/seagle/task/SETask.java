@@ -12,18 +12,18 @@ import java.util.concurrent.ThreadFactory;
  *
  * @author yuanxiudong66@sina.com
  */
-public class SEAsyncTask<V> {
+public class SETask<V> {
     private volatile static ExecutorService sDefaultExecutor;
-    private final CancelableTask<V> mTask;
-    private volatile TaskCallback<V> mCallback;
+    private final SECancelableTask<V> mTask;
+    private volatile SETaskCallback<V> mCallback;
     private volatile FutureTask<V> mFutureTask;
 
 
-    public SEAsyncTask(CancelableTask<V> task) {
+    public SETask(SECancelableTask<V> task) {
         mTask = task;
     }
 
-    public SEAsyncTask() {
+    public SETask() {
         mTask = null;
     }
 
@@ -48,19 +48,18 @@ public class SEAsyncTask<V> {
         if (mFutureTask != null) {
             mFutureTask.cancel(true);
         }
-        mFutureTask = null;
     }
 
     /**
      * Submit and execute task.
      *
      * @param callback callback
-     * @return SEAsyncTask
+     * @return SETask
      */
-    public final SEAsyncTask<V> submit(TaskCallback<V> callback) {
+    public final SETask<V> submit(SETaskCallback<V> callback) {
         synchronized (this) {
             if (mFutureTask == null) {
-                CancelableTask<V> task = mTask;
+                SECancelableTask<V> task = mTask;
                 if (task == null) {
                     task = new InternalTask();
                 }
@@ -79,12 +78,12 @@ public class SEAsyncTask<V> {
      *
      * @param callback callback
      * @param executor thread pool
-     * @return SEAsyncTask
+     * @return SETask
      */
-    public final SEAsyncTask<V> submit(ExecutorService executor, TaskCallback<V> callback) {
+    public final SETask<V> submit(ExecutorService executor, SETaskCallback<V> callback) {
         synchronized (this) {
             if (mFutureTask == null) {
-                CancelableTask<V> task = mTask;
+                SECancelableTask<V> task = mTask;
                 if (task == null) {
                     task = new InternalTask();
                 }
@@ -119,8 +118,8 @@ public class SEAsyncTask<V> {
      * For sub class call.
      */
     protected final void notifyProgressUpdate(Object object) {
-        if (mCallback != null && mFutureTask != null && !mFutureTask.isCancelled() && mCallback instanceof ProgressTaskCallback) {
-            ((ProgressTaskCallback) mCallback).onProgressUpdate(object);
+        if (mCallback != null && mFutureTask != null && !mFutureTask.isCancelled() && mCallback instanceof SEProgressTaskCallback) {
+            ((SEProgressTaskCallback) mCallback).onProgressUpdate(object);
         }
     }
 
@@ -163,16 +162,16 @@ public class SEAsyncTask<V> {
     /**
      * Internal task
      */
-    private class InternalTask implements CancelableTask<V> {
+    private class InternalTask implements SECancelableTask<V> {
 
         @Override
         public V call() throws Exception {
-            return SEAsyncTask.this.call();
+            return SETask.this.call();
         }
 
         @Override
         public void cancel() {
-            SEAsyncTask.this.onCancel();
+            SETask.this.onCancel();
         }
     }
 
@@ -182,9 +181,9 @@ public class SEAsyncTask<V> {
      */
     private class TaskSession extends FutureTask<V> {
 
-        private final CancelableTask<V> mTask;
+        private final SECancelableTask<V> mTask;
 
-        private TaskSession(CancelableTask<V> task) {
+        private TaskSession(SECancelableTask<V> task) {
             super(task);
             mTask = task;
         }
