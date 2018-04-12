@@ -105,8 +105,8 @@ public class SETaskTest {
         try {
             asyncTask.get();
             Assert.assertTrue(false);
-        } catch (ExecutionException e) {
-            Assert.assertTrue(e.getCause() instanceof CancellationException);
+        } catch (Exception e) {
+            Assert.assertTrue(e instanceof CancellationException);
         }
     }
 
